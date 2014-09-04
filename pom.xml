@@ -41,6 +41,8 @@
     <fake-hbase.version>0.3.0-SNAPSHOT</fake-hbase.version>
     <kiji-annotations.version>1.1.2-SNAPSHOT</kiji-annotations.version>
     <kiji-delegation.version>1.1.2-SNAPSHOT</kiji-delegation.version>
+
+    <bento-maven-plugin.version>0.1.0-SNAPSHOT</bento-maven-plugin.version>
   </properties>
 
   <modules>
@@ -64,6 +66,23 @@
 
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.kiji.maven.plugins</groupId>
+          <artifactId>bento-maven-plugin</artifactId>
+          <version>${bento-maven-plugin.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>start</goal>
+                <goal>stop</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <bento.pypi.repository>http://pypi.wibidata.net/simple</bento.pypi.repository>
+          </configuration>
+        </plugin>
+
         <plugin>
           <!-- must supply build-resources module with checkstyle/checkstyle.xml
                and suppressions.xml to use this -->
