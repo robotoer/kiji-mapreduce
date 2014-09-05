@@ -38,6 +38,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.kiji.mapreduce.DistributedCacheJars;
 import org.kiji.mapreduce.HFileLoader;
 import org.kiji.mapreduce.KijiMRTestLayouts;
 import org.kiji.mapreduce.KijiMapReduceJob;
@@ -72,9 +73,9 @@ public class IntegrationTestTableMapper extends AbstractKijiIntegrationTest {
    */
   private Path makeRandomPath(String prefix) throws Exception {
     Preconditions.checkNotNull(mFS);
-    final Path base = new Path(FileSystem.getDefaultUri(mConf));
+    final Path base = new Path(new Path(FileSystem.getDefaultUri(mConf)), mFS.getHomeDirectory());
     final Random random = new Random(System.nanoTime());
-    return new Path(base, String.format("/%s-%s", prefix, random.nextLong()));
+    return new Path(base, String.format("%s-%s", prefix, random.nextLong()));
   }
 
   /**
@@ -124,6 +125,12 @@ public class IntegrationTestTableMapper extends AbstractKijiIntegrationTest {
   @Before
   public final void setupIntegrationTestTableMapper() throws Exception {
     mConf = getConf();
+    // Quick hack to get the test runner classpath onto the distributed cache.
+    DistributedCacheJars.addJarsToDistributedCache(
+        mConf,
+        ClasspathUtils.getCurrentClasspathEntries()
+    );
+
     mFS = FileSystem.get(mConf);
 
     mKiji = Kiji.Factory.open(getKijiURI(), mConf);

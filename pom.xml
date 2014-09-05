@@ -79,6 +79,7 @@
             </execution>
           </executions>
           <configuration>
+            <bento.skip>${skipTests}</bento.skip>
             <bento.pypi.repository>http://pypi.wibidata.net/simple</bento.pypi.repository>
           </configuration>
         </plugin>

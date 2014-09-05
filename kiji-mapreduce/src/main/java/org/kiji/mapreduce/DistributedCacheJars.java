@@ -110,32 +110,35 @@ public final class DistributedCacheJars {
     if (null == jarDirectory) {
       throw new IllegalArgumentException("Jar directory may not be null");
     }
-    addJarsToDistributedCache(job, listJarFilesFromDirectory(job.getConfiguration(), jarDirectory));
+    addJarsToDistributedCache(
+        job.getConfiguration(),
+        listJarFilesFromDirectory(job.getConfiguration(), jarDirectory)
+    );
   }
 
   /**
    * Adds the jar files into the distributed cache of a job.
    *
-   * @param job The job to configure.
+   * @param conf The configuration object to configure.
    * @param jarFiles Collection of jar files to add.
    * @throws IOException on I/O error.
    */
-  public static void addJarsToDistributedCache(Job job, Collection<Path> jarFiles)
+  public static void addJarsToDistributedCache(Configuration conf, Collection<Path> jarFiles)
       throws IOException {
     // Get existing jars named in configuration.
     final List<Path> allJars =
-        Lists.newArrayList(getJarsFromConfiguration(job.getConfiguration()));
+        Lists.newArrayList(getJarsFromConfiguration(conf));
 
     // Add jars from jarDirectory.
     for (Path path : jarFiles) {
-      final Path qualifiedPath = path.getFileSystem(job.getConfiguration()).makeQualified(path);
+      final Path qualifiedPath = path.getFileSystem(conf).makeQualified(path);
       LOG.debug("Adding jar {}, fully qualified as {}", path, qualifiedPath);
       allJars.add(qualifiedPath);
     }
 
     // De-duplicate the list of jar files, based on their names:
     final Collection<Path> deDupedJars = deDuplicateFilenames(allJars);
-    job.getConfiguration().set(CONF_TMPJARS, StringUtils.join(deDupedJars, ","));
+    conf.set(CONF_TMPJARS, StringUtils.join(deDupedJars, ","));
   }
 
   /**

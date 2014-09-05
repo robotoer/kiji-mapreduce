@@ -49,6 +49,7 @@ import org.junit.Test;
 
 import org.kiji.mapreduce.framework.HBaseKijiTableInputFormat;
 import org.kiji.mapreduce.framework.KijiTableInputFormat;
+import org.kiji.mapreduce.testlib.ClasspathUtils;
 import org.kiji.schema.DecodedCell;
 import org.kiji.schema.EntityId;
 import org.kiji.schema.HBaseEntityId;
@@ -136,7 +137,7 @@ public class IntegrationTestKijiTableInputFormat
         jarFiles.add(fs.makeQualified(new Path(cpEntry)));
       }
     }
-    DistributedCacheJars.addJarsToDistributedCache(job, jarFiles);
+    DistributedCacheJars.addJarsToDistributedCache(conf, jarFiles);
 
     // Create a test job.
     job.setJobName(jobName);
@@ -146,6 +147,10 @@ public class IntegrationTestKijiTableInputFormat
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(Text.class);
     job.setOutputFormatClass(TextOutputFormat.class);
+    DistributedCacheJars.addJarsToDistributedCache(
+        conf,
+        ClasspathUtils.getCurrentClasspathEntries()
+    );
 
     // Set the mapper class.
     if (null != mapperClass) {
@@ -160,7 +165,7 @@ public class IntegrationTestKijiTableInputFormat
   }
 
   private Path createOutputFile() {
-    return new Path(String.format("/%s-%s-%d/part-r-00000",
+    return new Path(String.format("%s-%s-%d/part-r-00000",
         getClass().getName(), mTestName.getMethodName(), System.currentTimeMillis()));
   }
 

@@ -66,7 +66,7 @@ public class IntegrationTestTableMapReducer extends AbstractKijiIntegrationTest 
         }
 
         final Path output = new Path(fs.getUri().toString(),
-            String.format("/%s-%s-%d/table-mr-output",
+            String.format("%s-%s-%d/table-mr-output",
                 getClass().getName(), mTestName.getMethodName(), System.currentTimeMillis()));
 
         final KijiMapReduceJob mrjob = KijiGatherJobBuilder.create()

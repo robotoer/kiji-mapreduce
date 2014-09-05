@@ -43,6 +43,7 @@ import org.kiji.mapreduce.bulkimport.KijiBulkImportJobBuilder;
 import org.kiji.mapreduce.bulkimport.KijiBulkImporter;
 import org.kiji.mapreduce.input.MapReduceJobInputs;
 import org.kiji.mapreduce.output.MapReduceJobOutputs;
+import org.kiji.mapreduce.testlib.ClasspathUtils;
 import org.kiji.schema.EntityId;
 import org.kiji.schema.Kiji;
 import org.kiji.schema.KijiDataRequest;
@@ -74,9 +75,9 @@ public class IntegrationTestKijiBulkLoad
    */
   private Path makeRandomPath(String prefix) throws Exception {
     Preconditions.checkNotNull(mFS);
-    final Path base = new Path(FileSystem.getDefaultUri(mConf));
+    final Path base = new Path(new Path(FileSystem.getDefaultUri(mConf)), mFS.getHomeDirectory());
     final Random random = new Random(System.nanoTime());
-    return new Path(base, String.format("/%s-%s", prefix, random.nextLong()));
+    return new Path(base, String.format("%s-%s", prefix, random.nextLong()));
   }
 
   private void writeTestResource(Path path, String testResource) throws Exception {
@@ -88,6 +89,12 @@ public class IntegrationTestKijiBulkLoad
   @Before
   public void setUp() throws Exception {
     mConf = createConfiguration();
+    // Quick hack to get the test runner classpath onto the distributed cache.
+    DistributedCacheJars.addJarsToDistributedCache(
+        mConf,
+        ClasspathUtils.getCurrentClasspathEntries()
+    );
+
     mFS = FileSystem.get(mConf);
     mBulkImportInputPath = makeRandomPath("bulk-import-input");
 

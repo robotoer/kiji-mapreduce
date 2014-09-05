@@ -65,6 +65,7 @@
             on OSX - see KIJIMR-247.
           -->
           <argLine>-Xmx2048m</argLine>
+          <skip>true</skip>
         </configuration>
       </plugin>
 

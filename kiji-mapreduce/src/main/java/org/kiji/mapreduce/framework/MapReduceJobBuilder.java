@@ -622,7 +622,7 @@ public abstract class MapReduceJobBuilder<T extends MapReduceJobBuilder<T>> {
           jarFiles.add(new Path("file:" + cpEntry));  // local files
         }
       }
-      DistributedCacheJars.addJarsToDistributedCache(job, jarFiles);
+      DistributedCacheJars.addJarsToDistributedCache(job.getConfiguration(), jarFiles);
     }
 
     // We release kiji-schema to a directory called KIJI_HOME, and the jars for kiji and all its
