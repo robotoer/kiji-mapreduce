@@ -24,9 +24,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.OutputStream;
 import java.util.Map;
-import java.util.Random;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -60,20 +58,6 @@ public class IntegrationTestSimpleBulkImporter extends AbstractKijiIntegrationTe
   private Path mBulkImportInputPath = null;
   private Kiji mKiji = null;
   private KijiTable mOutputTable = null;
-
-  /**
-   * Generates a random HDFS path.
-   *
-   * @param prefix Prefix for the random file name.
-   * @return a random HDFS path.
-   * @throws Exception on error.
-   */
-  private Path makeRandomPath(String prefix) throws Exception {
-    Preconditions.checkNotNull(mFS);
-    final Path base = new Path(new Path(FileSystem.getDefaultUri(mConf)), mFS.getHomeDirectory());
-    final Random random = new Random(System.nanoTime());
-    return new Path(base, String.format("%s-%s", prefix, random.nextLong()));
-  }
 
   private void writeBulkImportInput(Path path) throws Exception {
     final String[] inputLines = {
@@ -130,11 +114,15 @@ public class IntegrationTestSimpleBulkImporter extends AbstractKijiIntegrationTe
     // Quick hack to get the test runner classpath onto the distributed cache.
     DistributedCacheJars.addJarsToDistributedCache(
         mConf,
-        ClasspathUtils.getCurrentClasspathEntries()
+        TestingUtils.getCurrentClasspathEntries()
     );
 
     mFS = FileSystem.get(mConf);
-    mBulkImportInputPath = makeRandomPath("bulk-import-input");
+    mBulkImportInputPath = TestingUtils.makeRandomPath(
+        IntegrationTestSimpleBulkImporter.class,
+        "bulk-import-input",
+        mFS
+    );
     writeBulkImportInput(mBulkImportInputPath);
     mKiji = Kiji.Factory.open(getKijiURI(), mConf);
     final KijiTableLayout layout = KijiTableLayout.newLayout(KijiMRTestLayouts.getTestLayout());
@@ -173,7 +161,11 @@ public class IntegrationTestSimpleBulkImporter extends AbstractKijiIntegrationTe
 
   @Test
   public void testSimpleBulkImporterHFile() throws Exception {
-    final Path hfileDirPath = this.makeRandomPath("hfile-output");
+    final Path hfileDirPath = TestingUtils.makeRandomPath(
+        IntegrationTestSimpleBulkImporter.class,
+        "hfile-output",
+        mFS
+    );
     try {
       final KijiMapReduceJob mrjob = KijiBulkImportJobBuilder.create()
           .withConf(mConf)

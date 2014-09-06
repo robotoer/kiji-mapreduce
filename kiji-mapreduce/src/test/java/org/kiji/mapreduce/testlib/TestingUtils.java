@@ -25,22 +25,22 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
-import javax.annotation.Nullable;
-
-import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.fs.permission.FsPermission;
 
-import org.kiji.mapreduce.DistributedCacheJars;
-
-public final class ClasspathUtils {
+/**
+ * Utility class for containing utility functions for tests.
+ */
+public final class TestingUtils {
   public static final int UNIQUE_DIR_ATTEMPTS = 1000;
 
   /** Static components to help build a JAR file. */
@@ -54,7 +54,7 @@ public final class ClasspathUtils {
   /**
    * Disable constructor for utility class.
    */
-  private ClasspathUtils() { }
+  private TestingUtils() { }
 
   /**
    * Returns the classpath as a list of paths.
@@ -170,6 +170,53 @@ public final class ClasspathUtils {
   }
 
   /**
+   * Creates a unique directory on HDFS in the specified directory.
+   *
+   * @param prefix to prepend the temporary directory name with.
+   * @param suffix to suffix the temporary directory name with.
+   * @param directory to create the temporary directory in.
+   * @param fileSystem of the temporary directory to create.
+   * @param permissions to be applied to the created directory.
+   * @return a temporary directory on HDFS.
+   * @throws IOException if there is a problem reading from/writing to HDFS.
+   */
+  public static Path createUniqueHdfsDir(
+      final String prefix,
+      final String suffix,
+      final Path directory,
+      final FileSystem fileSystem,
+      final FsPermission permissions
+  ) throws IOException {
+    // This was originally copied from Guava's Files#createTempDir().
+    final String baseName;
+    if (prefix.equals("")) {
+      baseName = Long.toString(System.currentTimeMillis());
+    } else {
+      baseName = String.format("%s-%d", prefix, System.currentTimeMillis());
+    }
+
+    for (int counter = 0; counter < UNIQUE_DIR_ATTEMPTS; counter++) {
+      final String tempDirName;
+      if (suffix.equals("")) {
+        tempDirName = String.format("%s-%d", baseName, counter);
+      } else {
+        tempDirName = String.format("%s-%d-%s", baseName, counter, suffix);
+      }
+      final Path tempDir = new Path(directory, tempDirName);
+      if (fileSystem.mkdirs(tempDir, permissions)) {
+        return tempDir;
+      }
+    }
+    throw new IllegalStateException(
+        String.format(
+            "Failed to create directory in %s within %s attempts",
+            directory,
+            UNIQUE_DIR_ATTEMPTS
+        )
+    );
+  }
+
+  /**
    * Helper method to recursively add a directory to a jar.
    *
    * @see <a href=
@@ -223,5 +270,33 @@ public final class ClasspathUtils {
         in.close();
       }
     }
+  }
+
+  /**
+   * Generates a random HDFS path.
+   *
+   * @param testClass needing this random path. Will be used in the generated path.
+   * @param prefix Prefix for the random file name.
+   * @return a random HDFS path.
+   * @throws Exception on error.
+   */
+  public static Path makeRandomPath(
+      final Class<?> testClass,
+      final String prefix,
+      final FileSystem fileSystem
+  ) throws Exception {
+    Preconditions.checkNotNull(fileSystem);
+    final Path base = new Path(new Path(fileSystem.getUri()), fileSystem.getHomeDirectory());
+    return createUniqueHdfsDir(
+        prefix,
+        "",
+        new Path(
+            new Path(base, "tmp/"),
+            String.format("%s-%s", testClass.getName(), UUID.randomUUID().toString())
+        ),
+        fileSystem,
+        // Give all hdfs users access to this directory.
+        FsPermission.valueOf("drwxrwxrwx")
+    );
   }
 }

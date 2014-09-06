@@ -49,7 +49,7 @@ import org.junit.Test;
 
 import org.kiji.mapreduce.framework.HBaseKijiTableInputFormat;
 import org.kiji.mapreduce.framework.KijiTableInputFormat;
-import org.kiji.mapreduce.testlib.ClasspathUtils;
+import org.kiji.mapreduce.testlib.TestingUtils;
 import org.kiji.schema.DecodedCell;
 import org.kiji.schema.EntityId;
 import org.kiji.schema.HBaseEntityId;
@@ -149,7 +149,7 @@ public class IntegrationTestKijiTableInputFormat
     job.setOutputFormatClass(TextOutputFormat.class);
     DistributedCacheJars.addJarsToDistributedCache(
         conf,
-        ClasspathUtils.getCurrentClasspathEntries()
+        TestingUtils.getCurrentClasspathEntries()
     );
 
     // Set the mapper class.

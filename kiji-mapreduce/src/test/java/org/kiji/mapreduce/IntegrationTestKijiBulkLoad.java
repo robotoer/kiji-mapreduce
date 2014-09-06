@@ -43,7 +43,7 @@ import org.kiji.mapreduce.bulkimport.KijiBulkImportJobBuilder;
 import org.kiji.mapreduce.bulkimport.KijiBulkImporter;
 import org.kiji.mapreduce.input.MapReduceJobInputs;
 import org.kiji.mapreduce.output.MapReduceJobOutputs;
-import org.kiji.mapreduce.testlib.ClasspathUtils;
+import org.kiji.mapreduce.testlib.TestingUtils;
 import org.kiji.schema.EntityId;
 import org.kiji.schema.Kiji;
 import org.kiji.schema.KijiDataRequest;
@@ -92,7 +92,7 @@ public class IntegrationTestKijiBulkLoad
     // Quick hack to get the test runner classpath onto the distributed cache.
     DistributedCacheJars.addJarsToDistributedCache(
         mConf,
-        ClasspathUtils.getCurrentClasspathEntries()
+        TestingUtils.getCurrentClasspathEntries()
     );
 
     mFS = FileSystem.get(mConf);

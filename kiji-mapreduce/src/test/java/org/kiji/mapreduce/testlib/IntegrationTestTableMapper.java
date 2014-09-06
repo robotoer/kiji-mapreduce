@@ -128,7 +128,7 @@ public class IntegrationTestTableMapper extends AbstractKijiIntegrationTest {
     // Quick hack to get the test runner classpath onto the distributed cache.
     DistributedCacheJars.addJarsToDistributedCache(
         mConf,
-        ClasspathUtils.getCurrentClasspathEntries()
+        TestingUtils.getCurrentClasspathEntries()
     );
 
     mFS = FileSystem.get(mConf);
